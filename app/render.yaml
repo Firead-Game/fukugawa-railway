@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: fukugawa-railway
+    env: docker
+    plan: free
+    region: singapore # 日本から近いシンガポールを選択
+    startCommand: apache2-foreground
