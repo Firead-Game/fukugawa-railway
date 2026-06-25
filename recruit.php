@@ -1,0 +1,125 @@
+<?php
+// ==========================================
+// データベース接続設定 (LocalのPort: 10011)
+// ==========================================
+$host     = '127.0.0.1;port=10011'; 
+$dbname   = 'local'; 
+$username = 'root';
+$password = 'root';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+} catch (PDOException $e) {
+    die("データベース接続失敗: " . $e->getMessage());
+}
+
+// 画面上部のヘッダー用に運行情報を取得
+$status_rows = $pdo->query("SELECT * FROM train_status")->fetchAll();
+$status = [];
+foreach ($status_rows as $row) {
+    $status[$row['line_key']] = $row;
+}
+?>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>採用情報 | 福川急行電鉄</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Helvetica Neue", Arial, sans-serif; }
+        body { background-color: #f5f7fa; color: #333; }
+        header { background-color: #ffffff; border-bottom: 3px solid #005bac; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-top { max-width: 1200px; margin: 0 auto; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .logo-text { font-size: 26px; font-weight: bold; color: #005bac; border-left: 5px solid #005bac; padding-left: 12px; text-decoration: none; }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        
+        .status-container { display: flex; flex-direction: column; gap: 6px; background-color: #f0f4f8; border: 1px solid #d0daf0; padding: 10px 16px; border-radius: 6px; min-width: 240px; }
+        .status-row { display: flex; justify-content: space-between; font-size: 14px; gap: 20px; }
+        .status-line-name { font-weight: bold; color: #444; }
+        .status-text { font-weight: bold; }
+        .status-text.normal { color: #2e7d32; }
+        .status-text.delay { color: #e65100; }
+        .status-text.stop { color: #d32f2f; }
+
+        nav { background-color: #005bac; }
+        nav ul { max-width: 1200px; margin: 0 auto; display: flex; list-style: none; }
+        nav ul li { flex: 1; text-align: center; }
+        nav ul li a { display: block; padding: 15px 0; color: #ffffff; text-decoration: none; font-weight: bold; border-right: 1px solid rgba(255, 255, 255, 0.2); }
+        nav ul li a.active { background-color: #004480; }
+        nav ul li:last-child a { border-right: none; }
+        
+        main { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        
+        .recruit-box { background-color: #ffffff; padding: 35px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .recruit-box h2 { font-size: 24px; color: #005bac; border-bottom: 2px solid #005bac; padding-bottom: 12px; margin-bottom: 25px; }
+        .recruit-lead { font-size: 16px; line-height: 1.8; color: #555; margin-bottom: 30px; }
+        
+        h3 { font-size: 18px; color: #2c3e50; margin: 25px 0 15px 0; padding-left: 8px; border-left: 4px solid #ff9800; }
+        
+        /* 募集要項テーブル */
+        .recruit-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .recruit-table th, .recruit-table td { padding: 15px; border: 1px solid #e0e0e0; font-size: 15px; }
+        .recruit-table th { background-color: #f8f9fa; color: #444; font-weight: bold; width: 200px; text-align: left; }
+        .recruit-table td { line-height: 1.6; }
+        
+        footer { background-color: #333; color: #fff; text-align: center; padding: 20px 0; margin-top: 60px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-top">
+            <a href="index.php" class="logo-text">福川急行電鉄</a>
+            <div class="header-right">
+                <div class="status-container">
+                    <div class="status-row">
+                        <span class="status-line-name">日原線：</span>
+                        <span class="status-text <?php echo $status['hibara']['status_val']; ?>"><?php echo $status['hibara']['status_text']; ?></span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-line-name">臨海線：</span>
+                        <span class="status-text <?php echo $status['rinkai']['status_val']; ?>"><?php echo $status['rinkai']['status_text']; ?></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.php">ホーム</a></li>
+                <li><a href="fare.php">乗車券・運賃</a></li>
+                <li><a href="route_map.php">路線図</a></li>
+                <li><a href="news_list.php">ニュース</a></li>
+                <li><a href="recruit.php" class="active">採用情報</a></li>
+                <li><a href="company.php">企業情報</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="recruit-box">
+            <h2>採用情報</h2>
+            <div class="recruit-lead">
+                福川急行電鉄では、随時社員を募集しております。興味がある方はぜひご応募ください。
+            </div>
+            
+            <h3>応募はこちら</h3>
+            <table class="recruit-table">
+                <tr>
+                    <th>応募用フォーム</th>
+                   <td><a href="https://forms.gle/Z8CSEkXYBHXHdfE27" target="_blank" rel="noopener">https://forms.gle/Z8CSEkXYBHXHdfE27</a></td>
+                </tr>
+            
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Fukugawa Rapid Railway Co., Ltd. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>
